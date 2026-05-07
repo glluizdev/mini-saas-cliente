@@ -7,6 +7,14 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+const path = require('path');
+
+app.use(express.static(path.join(__dirname)));
+
+app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "index.html"));
+});
+
 const db = new sqlite3.Database('./database.db');
 
 // 🔥 CRIA TABELA AUTOMATICAMENTE
