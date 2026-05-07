@@ -9,6 +9,35 @@ const totalClients = document.getElementById('totalClients');
 const totalValue = document.getElementById('totalValue');
 
 /* =========================
+   EDITAR CLIENTES
+========================= */
+async function editClient(id) {
+
+    const name = prompt("Novo nome:");
+    const company = prompt("Nova empresa:");
+    const phone = prompt("Novo telefone:");
+    const service = prompt("Novo serviço:");
+    const value = prompt("Novo valor:");
+    const status = prompt("Status (active/inactive):");
+
+    await fetch(`${API}/clients/${id}`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            name,
+            company,
+            phone,
+            service,
+            value: Number(value),
+            status
+        })
+    });
+
+    loadClients();
+}
+/* =========================
    LISTAR CLIENTES
 ========================= */
 async function loadClients() {
@@ -21,10 +50,7 @@ async function loadClients() {
 
     clients.forEach(client => {
 
-        // 🔥 FORÇA CONVERSÃO SEGURA
         const value = parseFloat(client.value) || 0;
-
-        // 🔥 NORMALIZA STATUS
         const status = (client.status || "").toLowerCase();
 
         if (status === "active") {
@@ -32,6 +58,7 @@ async function loadClients() {
         }
 
         const li = document.createElement('li');
+
         li.innerHTML = `
             <strong>${client.name}</strong><br>
             Empresa: ${client.company}<br>
@@ -42,12 +69,13 @@ async function loadClients() {
                 ${status === "active" ? "Ativo" : "Inativo"}
             </span><br>
 
-            Valor: R$ ${value.toFixed(2)}
-        `;
+            Valor: R$ ${value.toFixed(2)}<br><br>
 
+            <button onclick="editClient('${client.id}')">Editar</button>
+            <button onclick="deleteClient('${client.id}')">Excluir</button>
+        `;
         clientList.appendChild(li);
     });
-
     totalClients.textContent = clients.length;
     totalValue.textContent = `R$ ${total.toFixed(2)}`;
 }
