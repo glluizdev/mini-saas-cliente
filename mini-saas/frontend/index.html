@@ -3,80 +3,112 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mini SaaS</title>
+<title>Mini SaaS - Clientes</title>
 
 <style>
 body{
-    font-family: Arial;
-    background: #f5f5f5;
+    font-family: Arial, sans-serif;
+    background: #f4f6f9;
+    margin: 0;
     padding: 30px;
+    color: #333;
 }
 
-/* FORM */
-form{
-    display: flex;
-    flex-direction: column;
-    width: 300px;
-    gap: 10px;
-}
-
-input, select, button{
-    padding: 10px;
-}
-
-/* LISTA */
-li{
-    background: white;
-    margin-top: 10px;
-    padding: 15px;
-    border-radius: 5px;
-    list-style: none;
+/* TITULO */
+h1{
+    margin-bottom: 20px;
 }
 
 /* DASHBOARD */
 .dashboard{
     display: flex;
     gap: 20px;
-    margin-bottom: 30px;
+    margin-bottom: 25px;
 }
 
 .card{
-    background: white;
+    background: #fff;
     padding: 20px;
-    border-radius: 10px;
+    border-radius: 12px;
     width: 220px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transition: 0.2s;
+}
+
+.card:hover{
+    transform: translateY(-3px);
 }
 
 .card h3{
     margin: 0;
-    color: #666;
+    font-size: 14px;
+    color: #777;
 }
 
 .card p{
     font-size: 24px;
     font-weight: bold;
+    margin-top: 10px;
+}
+
+/* FORM */
+form{
+    background: #fff;
+    padding: 20px;
+    border-radius: 12px;
+    width: 320px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    margin-bottom: 25px;
+}
+
+input, select{
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    outline: none;
+}
+
+input:focus, select:focus{
+    border-color: #4CAF50;
 }
 
 /* BOTÃO */
 button{
+    padding: 10px;
     border: none;
-    cursor: pointer;
-    border-radius: 5px;
+    border-radius: 8px;
     background: #4CAF50;
     color: white;
     font-weight: bold;
+    cursor: pointer;
 }
 
 button:hover{
-    opacity: 0.9;
+    background: #43a047;
 }
 
-/* STATUS (corrigido) */
+/* LISTA */
+ul{
+    padding: 0;
+}
+
+li{
+    background: #fff;
+    margin-top: 10px;
+    padding: 15px;
+    border-radius: 12px;
+    list-style: none;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.06);
+}
+
+/* STATUS */
 .status{
     display: inline-block;
-    padding: 3px 8px;
-    border-radius: 5px;
+    padding: 4px 8px;
+    border-radius: 6px;
     font-size: 12px;
     margin-top: 5px;
 }
@@ -95,7 +127,7 @@ button:hover{
 
 <body>
 
-<h1>Clientes</h1>
+<h1>📊 Mini SaaS - Clientes</h1>
 
 <!-- DASHBOARD -->
 <div class="dashboard">
@@ -112,18 +144,18 @@ button:hover{
 
 <!-- FORM -->
 <form id="clientForm">
-    <input type="text" id="name" placeholder="Nome" required>
-    <input type="text" id="company" placeholder="Empresa">
-    <input type="text" id="phone" placeholder="Telefone">
-    <input type="text" id="service" placeholder="Serviço">
-    <input type="text" id="value" placeholder="Valor mensal">
+    <input id="name" placeholder="Nome" required>
+    <input id="company" placeholder="Empresa">
+    <input id="phone" placeholder="Telefone">
+    <input id="service" placeholder="Serviço">
+    <input id="value" placeholder="Valor mensal">
 
     <select id="status">
         <option value="active">Ativo</option>
         <option value="inactive">Inativo</option>
     </select>
 
-    <button type="submit">Cadastrar</button>
+    <button type="submit">Cadastrar Cliente</button>
 </form>
 
 <!-- LISTA -->
