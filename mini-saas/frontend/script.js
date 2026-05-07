@@ -1,3 +1,4 @@
+
 const API = "https://mini-saas-cliente.onrender.com";
 
 /* =========================
@@ -8,35 +9,6 @@ const clientList = document.getElementById('clientList');
 const totalClients = document.getElementById('totalClients');
 const totalValue = document.getElementById('totalValue');
 
-/* =========================
-   EDITAR CLIENTES
-========================= */
-async function editClient(id) {
-
-    const name = prompt("Novo nome:");
-    const company = prompt("Nova empresa:");
-    const phone = prompt("Novo telefone:");
-    const service = prompt("Novo serviço:");
-    const value = prompt("Novo valor:");
-    const status = prompt("Status (active/inactive):");
-
-    await fetch(`${API}/clients/${id}`, {
-        method: "PUT",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            name,
-            company,
-            phone,
-            service,
-            value: Number(value),
-            status
-        })
-    });
-
-    loadClients();
-}
 /* =========================
    LISTAR CLIENTES
 ========================= */
@@ -50,9 +22,13 @@ async function loadClients() {
 
     clients.forEach(client => {
 
+        // 🔥 garante número válido
         const value = parseFloat(client.value) || 0;
+
+        // 🔥 normaliza status
         const status = (client.status || "").toLowerCase();
 
+        // soma só ativos
         if (status === "active") {
             total += value;
         }
@@ -74,8 +50,10 @@ async function loadClients() {
             <button onclick="editClient('${client.id}')">Editar</button>
             <button onclick="deleteClient('${client.id}')">Excluir</button>
         `;
+
         clientList.appendChild(li);
     });
+
     totalClients.textContent = clients.length;
     totalValue.textContent = `R$ ${total.toFixed(2)}`;
 }
@@ -86,12 +64,18 @@ async function loadClients() {
 form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
+    // 🔥 CORREÇÃO PRINCIPAL DO PROBLEMA DO VALOR
+    const rawValue = document.getElementById('value').value;
+
     const client = {
         name: document.getElementById('name').value,
         company: document.getElementById('company').value,
         phone: document.getElementById('phone').value,
         service: document.getElementById('service').value,
-        value: Number(document.getElementById('value').value),
+
+        // ✔ aceita 1000 ou 1000,50
+        value: parseFloat(rawValue.replace(',', '.')) || 0,
+
         status: document.getElementById('status').value
     };
 
@@ -106,6 +90,39 @@ form.addEventListener('submit', async (e) => {
     form.reset();
     loadClients();
 });
+
+/* =========================
+   EDITAR CLIENTE
+========================= */
+async function editClient(id) {
+
+    const name = prompt("Novo nome:");
+    const company = prompt("Nova empresa:");
+    const phone = prompt("Novo telefone:");
+    const service = prompt("Novo serviço:");
+    const value = prompt("Novo valor:");
+    const status = prompt("Status (active/inactive):");
+
+    await fetch(`${API}/clients/${id}`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            name,
+            company,
+            phone,
+            service,
+
+            // 🔥 garante número correto
+            value: parseFloat(value.replace(',', '.')) || 0,
+
+            status
+        })
+    });
+
+    loadClients();
+}
 
 /* =========================
    DELETE
