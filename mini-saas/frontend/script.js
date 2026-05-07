@@ -20,9 +20,14 @@ async function loadClients() {
     let total = 0;
 
     clients.forEach(client => {
-        const value = Number(client.value) || 0;
 
-        if (client.status === "active") {
+        // 🔥 FORÇA CONVERSÃO SEGURA
+        const value = parseFloat(client.value) || 0;
+
+        // 🔥 NORMALIZA STATUS
+        const status = (client.status || "").toLowerCase();
+
+        if (status === "active") {
             total += value;
         }
 
@@ -32,10 +37,12 @@ async function loadClients() {
             Empresa: ${client.company}<br>
             Telefone: ${client.phone}<br>
             Serviço: ${client.service}<br>
-            Status: ${client.status}<br>
-            Valor: R$ ${value.toFixed(2)}<br>
 
-            <button onclick="deleteClient('${client.id}')">Excluir</button>
+            Status: <span class="status ${status}">
+                ${status === "active" ? "Ativo" : "Inativo"}
+            </span><br>
+
+            Valor: R$ ${value.toFixed(2)}
         `;
 
         clientList.appendChild(li);
