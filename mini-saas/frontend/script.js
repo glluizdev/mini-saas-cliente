@@ -1,14 +1,19 @@
+const API = "https://mini-saas-cliente.onrender.com";
+
+/* =========================
+   ELEMENTOS
+========================= */
 const form = document.getElementById('clientForm');
 const clientList = document.getElementById('clientList');
 const totalClients = document.getElementById('totalClients');
 const totalValue = document.getElementById('totalValue');
 
 /* =========================
-   CARREGAR CLIENTES
+   LISTAR CLIENTES
 ========================= */
 async function loadClients() {
-    const response = await fetch('http://localhost:3000/clients');
-    const clients = await response.json();
+    const res = await fetch(`${API}/clients`);
+    const clients = await res.json();
 
     clientList.innerHTML = "";
 
@@ -17,7 +22,6 @@ async function loadClients() {
     clients.forEach(client => {
         const value = Number(client.value) || 0;
 
-        // soma só ativos
         if (client.status === "active") {
             total += value;
         }
@@ -28,10 +32,9 @@ async function loadClients() {
             Empresa: ${client.company}<br>
             Telefone: ${client.phone}<br>
             Serviço: ${client.service}<br>
-            Status: ${client.status === "active" ? "Ativo" : "Inativo"}<br>
-            Valor: R$ ${value.toFixed(2).replace('.', ',')}<br>
+            Status: ${client.status}<br>
+            Valor: R$ ${value.toFixed(2)}<br>
 
-            <button onclick="editClient('${client.id}')">Editar</button>
             <button onclick="deleteClient('${client.id}')">Excluir</button>
         `;
 
@@ -39,11 +42,7 @@ async function loadClients() {
     });
 
     totalClients.textContent = clients.length;
-
-    totalValue.textContent = total.toLocaleString('pt-BR', {
-        style: 'currency',
-        currency: 'BRL'
-    });
+    totalValue.textContent = `R$ ${total.toFixed(2)}`;
 }
 
 /* =========================
@@ -52,18 +51,16 @@ async function loadClients() {
 form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const rawValue = document.getElementById('value').value;
-
     const client = {
         name: document.getElementById('name').value,
         company: document.getElementById('company').value,
         phone: document.getElementById('phone').value,
         service: document.getElementById('service').value,
-        value: Number(rawValue.replace(',', '.')),
-        status: document.getElementById('status').value.toLowerCase()
+        value: Number(document.getElementById('value').value),
+        status: document.getElementById('status').value
     };
 
-    await fetch('http://localhost:3000/clients', {
+    await fetch(`${API}/clients`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -76,35 +73,10 @@ form.addEventListener('submit', async (e) => {
 });
 
 /* =========================
-   EDITAR CLIENTE
-========================= */
-async function editClient(id) {
-    const newName = prompt("Novo nome:");
-    const newValue = prompt("Novo valor:");
-    const newStatus = prompt("Status (active/inactive):");
-
-    if (!newName || !newValue || !newStatus) return;
-
-    await fetch(`http://localhost:3000/clients/${id}`, {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            name: newName,
-            value: Number(newValue),
-            status: newStatus.toLowerCase()
-        })
-    });
-
-    loadClients();
-}
-
-/* =========================
-   DELETAR CLIENTE
+   DELETE
 ========================= */
 async function deleteClient(id) {
-    await fetch(`http://localhost:3000/clients/${id}`, {
+    await fetch(`${API}/clients/${id}`, {
         method: 'DELETE'
     });
 
@@ -112,6 +84,6 @@ async function deleteClient(id) {
 }
 
 /* =========================
-   INICIALIZAÇÃO
+   INIT
 ========================= */
-loadClients();
+loadClients();S
