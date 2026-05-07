@@ -93,4 +93,4 @@ async function deleteClient(id) {
 /* =========================
    INIT
 ========================= */
-loadClients();S
+loadClients();
