@@ -1,99 +1,102 @@
-const express = require('express')
-const cors = require('cors')
-const path = require('path')
-const { supabase } = require('./supabase.js')
-const app = express()
-app.use(cors())
-app.use(express.json())
-app.use(express.static(path.join(__dirname)))
+const API = "https://mini-saas-cliente.onrender.com";
+
 /* =========================
-   TESTE SUPABASE
+   ELEMENTOS
 ========================= */
-app.get('/test-supabase', async (req, res) => {
-  const { data, error } = await supabase
-    .from('clients')
-    .select('*')
-  if (error) {
-    console.log("ERRO TEST:", error)
-    return res.status(500).json(error)
-  }
-  res.json(data)
-})
+const form = document.getElementById('clientForm');
+const clientList = document.getElementById('clientList');
+const totalClients = document.getElementById('totalClients');
+const totalValue = document.getElementById('totalValue');
 /* =========================
-   GET CLIENTES
+   CARREGAR CLIENTES
 ========================= */
-app.get('/clients', async (req, res) => {
-  const { data, error } = await supabase
-    .from('clients')
-    .select('*')
-    .order('created_at', { ascending: false })
-  if (error) {
-    console.log("ERRO GET:", error)
-    return res.status(500).json(error)
-  }
-  res.json(data)
-})
+async function loadClients() {
+    const res = await fetch(`${API}/clients`);
+    const clients = await res.json();
+
+    clientList.innerHTML = "";
+
+    let total = 0;
+
+    clients.forEach(client => {
+        const value = Number(client.value) || 0;
+        if (client.status === "active") {
+            total += value;
+        }
+        const li = document.createElement('li');
+        li.innerHTML = `
+            <strong>${client.name}</strong><br>
+            Empresa: ${client.company}<br>
+            Telefone: ${client.phone}<br>
+            Serviço: ${client.service}<br>
+            Status: ${client.status === "active" ? "Ativo" : "Inativo"}<br>
+            Valor: R$ ${value.toFixed(2).replace('.', ',')}<br>
+            <button onclick="editClient('${client.id}')">Editar</button>
+            <button onclick="deleteClient('${client.id}')">Excluir</button>
+        `;
+        clientList.appendChild(li);
+    });
+    totalClients.textContent = clients.length;
+    totalValue.textContent = total.toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+    });
+}
 /* =========================
-   CREATE CLIENTE (COM DEBUG)
+   CADASTRAR CLIENTE
 ========================= */
-app.post('/clients', async (req, res) => {
-  console.log("📥 BODY RECEBIDO:", req.body)
-  const { name, company, phone, service, value, status } = req.body
-  if (!name) {
-    return res.status(400).json({ error: "Nome é obrigatório" })
-  }
-  const { data, error } = await supabase
-    .from('clients')
-    .insert([
-      {
-        name,
-        company,
-        phone,
-        service,
-        value,
-        status
-      }
-    ])
-    .select()
-  if (error) {
-    console.log("❌ ERRO SUPABASE INSERT:", error)
-    return res.status(500).json(error)
-  }
-  res.json(data)
-})
+form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const rawValue = document.getElementById('value').value;
+    const client = {
+        name: document.getElementById('name').value,
+        company: document.getElementById('company').value,
+        phone: document.getElementById('phone').value,
+        service: document.getElementById('service').value,
+        value: Number(rawValue.replace(',', '.')),
+        status: document.getElementById('status').value.toLowerCase()
+    };
+    await fetch(`${API}/clients`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(client)
+    });
+    form.reset();
+    loadClients();
+});
 /* =========================
-   DELETE CLIENTE
+   EDITAR CLIENTE
 ========================= */
-app.delete('/clients/:id', async (req, res) => {
-  const { error } = await supabase
-    .from('clients')
-    .delete()
-    .eq('id', req.params.id)
-  if (error) {
-    console.log("ERRO DELETE:", error)
-    return res.status(500).json(error)
-  }
-  res.json({ message: "Cliente deletado com sucesso!" })
-})
+async function editClient(id) {
+    const newName = prompt("Novo nome:");
+    const newValue = prompt("Novo valor:");
+    const newStatus = prompt("Status (active/inactive):");
+    if (!newName || !newValue || !newStatus) return;
+    await fetch(`${API}/clients/${id}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            name: newName,
+            value: Number(newValue),
+            status: newStatus.toLowerCase()
+        })
+    });
+    loadClients();
+}
 /* =========================
-   UPDATE CLIENTE
+   DELETAR CLIENTE
 ========================= */
-app.put('/clients/:id', async (req, res) => {
-  const { data, error } = await supabase
-    .from('clients')
-    .update(req.body)
-    .eq('id', req.params.id)
-    .select()
-  if (error) {
-    console.log("ERRO UPDATE:", error)
-    return res.status(500).json(error)
-  }
-  res.json(data)
-})
+async function deleteClient(id) {
+    await fetch(`${API}/clients/${id}`, {
+        method: 'DELETE'
+    });
+    loadClients();
+}
 /* =========================
-   SERVER
+   INIT
 ========================= */
-const PORT = process.env.PORT || 3000
-app.listen(PORT, () => {
-  console.log(`🚀 Servidor rodando na porta ${PORT}`)
-})
+loadClients();
