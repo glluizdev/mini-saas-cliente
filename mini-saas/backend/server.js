@@ -1,84 +1,99 @@
-const express = require('express');
-const cors = require('cors');
-const sqlite3 = require('sqlite3').verbose();
-
-const app = express();
-
-app.use(cors());
-app.use(express.json());
-
-const path = require('path');
-
-app.use(express.static(path.join(__dirname)));
-
-app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "index.html"));
-});
-
-const db = new sqlite3.Database('./database.db');
-
-// 🔥 CRIA TABELA AUTOMATICAMENTE
-db.run(`
-CREATE TABLE IF NOT EXISTS clients (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT,
-    company TEXT,
-    phone TEXT,
-    service TEXT,
-    value REAL,
-    status TEXT
-)
-`);
-
-// GET
-app.get('/clients', (req, res) => {
-    db.all('SELECT * FROM clients', [], (err, rows) => {
-        res.json(rows);
-    });
-});
-
-// POST
-app.post('/clients', (req, res) => {
-    const { name, company, phone, service, value, status } = req.body;
-
-    db.run(
-        `INSERT INTO clients (name, company, phone, service, value, status)
-         VALUES (?, ?, ?, ?, ?, ?)`,
-        [name, company, phone, service, value, status]
-    );
-
-    res.json({ message: "Cliente criado!" });
-});
-
-// DELETE
-app.delete('/clients/:id', (req, res) => {
-    db.run(
-        'DELETE FROM clients WHERE id = ?',
-        [req.params.id]
-    );
-    res.json({ message: "Cliente deletado!" });
-});
-
-// PUT
-app.put('/clients/:id', (req, res) => {
-    const { id } = req.params;
-    const { name, value, status } = req.body;
-    db.run(
-        `UPDATE clients 
-         SET name = ?, value = ?, status = ? 
-         WHERE id = ?`,
-        [name, value, status, id],
-        function(err){
-            if(err){
-                return res.status(500).json(err);
-            }
-            res.json({ message: 'Cliente atualizado!' });
-        }
-    );
-});
-
-// SERVER
-const PORT = process.env.PORT || 3000;
+const express = require('express')
+const cors = require('cors')
+const path = require('path')
+const { supabase } = require('./supabase.js')
+const app = express()
+app.use(cors())
+app.use(express.json())
+app.use(express.static(path.join(__dirname)))
+/* =========================
+   TESTE SUPABASE
+========================= */
+app.get('/test-supabase', async (req, res) => {
+  const { data, error } = await supabase
+    .from('clients')
+    .select('*')
+  if (error) {
+    console.log("ERRO TEST:", error)
+    return res.status(500).json(error)
+  }
+  res.json(data)
+})
+/* =========================
+   GET CLIENTES
+========================= */
+app.get('/clients', async (req, res) => {
+  const { data, error } = await supabase
+    .from('clients')
+    .select('*')
+    .order('created_at', { ascending: false })
+  if (error) {
+    console.log("ERRO GET:", error)
+    return res.status(500).json(error)
+  }
+  res.json(data)
+})
+/* =========================
+   CREATE CLIENTE (COM DEBUG)
+========================= */
+app.post('/clients', async (req, res) => {
+  console.log("📥 BODY RECEBIDO:", req.body)
+  const { name, company, phone, service, value, status } = req.body
+  if (!name) {
+    return res.status(400).json({ error: "Nome é obrigatório" })
+  }
+  const { data, error } = await supabase
+    .from('clients')
+    .insert([
+      {
+        name,
+        company,
+        phone,
+        service,
+        value,
+        status
+      }
+    ])
+    .select()
+  if (error) {
+    console.log("❌ ERRO SUPABASE INSERT:", error)
+    return res.status(500).json(error)
+  }
+  res.json(data)
+})
+/* =========================
+   DELETE CLIENTE
+========================= */
+app.delete('/clients/:id', async (req, res) => {
+  const { error } = await supabase
+    .from('clients')
+    .delete()
+    .eq('id', req.params.id)
+  if (error) {
+    console.log("ERRO DELETE:", error)
+    return res.status(500).json(error)
+  }
+  res.json({ message: "Cliente deletado com sucesso!" })
+})
+/* =========================
+   UPDATE CLIENTE
+========================= */
+app.put('/clients/:id', async (req, res) => {
+  const { data, error } = await supabase
+    .from('clients')
+    .update(req.body)
+    .eq('id', req.params.id)
+    .select()
+  if (error) {
+    console.log("ERRO UPDATE:", error)
+    return res.status(500).json(error)
+  }
+  res.json(data)
+})
+/* =========================
+   SERVER
+========================= */
+const PORT = process.env.PORT || 3000
 app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
-});
+  console.log(`🚀 Servidor rodando na porta ${PORT}`)
+})
