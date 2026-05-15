@@ -1,4 +1,4 @@
-const API = "http://localhost:3000";
+const API = "https://mini-saas-cliente.onrender.com";
 
 //MASCARA TELEFONE 
 document
