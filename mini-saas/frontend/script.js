@@ -282,8 +282,10 @@ async function saveEdit() {
 
         value:
             Number(
-                document.getElementById('editValue').value
-            ),
+                document.getElementById('editValue')
+                  .value
+                 .replace(',', '.')
+             ),
 
         installments:
             Number(
@@ -323,14 +325,18 @@ document.getElementById('clientForm')
     e.preventDefault();
 
     const body = {
-        company: company.value,
-        cnpj: cnpj.value,
-        phone: phone.value,
-        service: service.value,
-        value: Number(value.value),
-        installments: Number(installments.value),
-        status: status.value
-    };
+    company: company.value,
+    cnpj: cnpj.value,
+    phone: phone.value,
+    service: service.value,
+
+    value: Number(
+        value.value.replace(',', '.')
+    ),
+
+    installments: Number(installments.value),
+    status: status.value
+};
 
     await fetch(`${API}/clients`, {
         method: "POST",
