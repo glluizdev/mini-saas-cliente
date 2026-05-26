@@ -1,4 +1,4 @@
-const API = "https://mini-saas-cliente.onrender.com";
+const API = import.meta.env.VITE_API_URL;
 
 //MASCARA TELEFONE 
 document
