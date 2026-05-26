@@ -1,4 +1,5 @@
 require('dotenv').config();
+
 const express = require('express');
 const cors = require('cors');
 
@@ -13,14 +14,16 @@ app.use(express.json());
 /* =========================
    ROTAS
 ========================= */
-const supabase = createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_KEY
-);
 
+app.get('/', (req, res) => {
+    res.json({
+        message: 'API funcionando'
+    });
+});
 
-app.use('/', clientsRoutes);
+app.use('/clients', clientsRoutes);
 app.use('/auth', authRoutes);
+
 /* =========================
    SERVIDOR
 ========================= */
